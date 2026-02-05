@@ -1,3 +1,11 @@
+terraform {
+  backend "s3" {
+    bucket = "minchang-tfstate-backend-2026" # 1단계에서 만든 버킷 이름 (정확해야 함!)
+    key    = "terraform.tfstate"             # 장부 파일 이름 (이대로 두세요)
+    region = "ap-northeast-2"
+  }
+}
+
 provider "aws" {
   region = "ap-northeast-2"
 }
