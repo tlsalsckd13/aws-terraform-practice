@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# permissions: id-token: write  <-- 이 줄은 OIDC용이라 이제 필요 없습니다. 삭제!
 permissions:
   contents: read
   pull-requests: write
@@ -17,8 +16,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      # [변경] Role 대신 Secret에 저장된 Key를 사용합니다!
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
