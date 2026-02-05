@@ -1,32 +1,26 @@
-name: "Terraform GitOps Flow"
+name: "Terraform Deploy (Access Key)"
 
 on:
-  # 1. 관리자가 승인(Merge)해서 main에 코드가 합쳐질 때 -> 배포(Apply)
   push:
     branches: [ "main" ]
-  # 2. 개발자가 코드를 올려서 검사(PR) 요청할 때 -> 미리보기(Plan)
   pull_request:
     branches: [ "main" ]
 
 permissions:
-  id-token: write
   contents: read
-  pull-requests: write # PR에 봇이 댓글 달 수 있게 권한 추가
+  pull-requests: write
 
 jobs:
   terraform:
-    name: "Terraform Infrastructure"
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # 아까 만든 역할 ARN 그대로 쓰세요
-          role-to-assume: arn:aws:iam::533266978704:role/Git_Terraform_ProvisioningRole
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
       - name: Setup Terraform
@@ -35,13 +29,10 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # [중요] PR 단계일 때는 Plan(계획)만 실행하고 결과를 보여줌
       - name: Terraform Plan
         if: github.event_name == 'pull_request'
-        id: plan
         run: terraform plan -no-color
 
-      # [중요] Main에 Push(승인 후 병합)되었을 때만 Apply(배포) 실행
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
